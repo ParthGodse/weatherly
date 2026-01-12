@@ -8,12 +8,17 @@ let currentUnit = 'metric'
 let favorites = JSON.parse(localStorage.getItem('favorites')) || []
 
 app.innerHTML = `
-  <div class="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-zinc-900 relative overflow-hidden">
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-float"></div>
-    <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-delayed"></div>
-    <div class="absolute top-1/2 left-1/2 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
-  </div>
+  <div class="min-h-screen bg-linear-to-br from-slate-900 via-gray-900 to-zinc-900 relative overflow-hidden">
+    
+    <!-- Weather Animation Container -->
+    <div id="weatherAnimationContainer"></div>
+    
+    <!-- Animated background elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-float"></div>
+      <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-delayed"></div>
+      <div class="absolute top-1/2 left-1/2 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
+    </div>
 
     <!-- Main container -->
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
@@ -181,6 +186,116 @@ document.getElementById('closeFavorites').addEventListener('click', hideFavorite
 // Auto-detect user location on load
 detectLocation()
 
+// Weather Animation Functions
+function createWeatherAnimation(weatherType) {
+  const container = document.getElementById('weatherAnimationContainer')
+  if (!container) return
+  
+  container.innerHTML = '' // Clear previous animations
+  
+  switch(weatherType.toLowerCase()) {
+    case 'rain':
+    case 'drizzle':
+      createRainEffect(container)
+      break
+    case 'snow':
+      createSnowEffect(container)
+      break
+    case 'clear':
+      createSunEffect(container)
+      break
+    case 'clouds':
+      createCloudsEffect(container)
+      break
+    case 'thunderstorm':
+      createThunderstormEffect(container)
+      break
+    default:
+      createDefaultEffect(container)
+  }
+}
+
+function createRainEffect(container) {
+  for (let i = 0; i < 100; i++) {
+    const drop = document.createElement('div')
+    drop.className = 'rain-drop'
+    drop.style.left = `${Math.random() * 100}%`
+    drop.style.animationDelay = `${Math.random() * 2}s`
+    drop.style.animationDuration = `${0.5 + Math.random() * 0.5}s`
+    container.appendChild(drop)
+  }
+}
+
+function createSnowEffect(container) {
+  for (let i = 0; i < 50; i++) {
+    const flake = document.createElement('div')
+    flake.className = 'snow-flake'
+    flake.textContent = '❄'
+    flake.style.left = `${Math.random() * 100}%`
+    flake.style.fontSize = `${10 + Math.random() * 20}px`
+    flake.style.animationDelay = `${Math.random() * 3}s`
+    flake.style.animationDuration = `${3 + Math.random() * 4}s`
+    container.appendChild(flake)
+  }
+}
+
+function createSunEffect(container) {
+  const sunRays = document.createElement('div')
+  sunRays.className = 'sun-rays'
+  sunRays.innerHTML = '<div class="sun-orb"></div>'
+  container.appendChild(sunRays)
+  
+  for (let i = 0; i < 20; i++) {
+    const particle = document.createElement('div')
+    particle.className = 'sun-particle'
+    particle.style.left = `${Math.random() * 100}%`
+    particle.style.top = `${Math.random() * 100}%`
+    particle.style.animationDelay = `${Math.random() * 3}s`
+    particle.style.animationDuration = `${2 + Math.random() * 2}s`
+    container.appendChild(particle)
+  }
+}
+
+function createCloudsEffect(container) {
+  for (let i = 0; i < 5; i++) {
+    const cloud = document.createElement('div')
+    cloud.className = 'weather-cloud'
+    cloud.innerHTML = '☁️'
+    cloud.style.top = `${10 + Math.random() * 50}%`
+    cloud.style.left = `-100px`
+    cloud.style.fontSize = `${50 + Math.random() * 50}px`
+    cloud.style.animationDelay = `${i * 3}s`
+    cloud.style.animationDuration = `${20 + Math.random() * 10}s`
+    container.appendChild(cloud)
+  }
+}
+
+function createThunderstormEffect(container) {
+  createRainEffect(container)
+  
+  const lightning = document.createElement('div')
+  lightning.className = 'lightning'
+  container.appendChild(lightning)
+  
+  setInterval(() => {
+    if (Math.random() > 0.7) {
+      lightning.classList.add('flash')
+      setTimeout(() => lightning.classList.remove('flash'), 200)
+    }
+  }, 3000)
+}
+
+function createDefaultEffect(container) {
+  for (let i = 0; i < 15; i++) {
+    const particle = document.createElement('div')
+    particle.className = 'ambient-particle'
+    particle.style.left = `${Math.random() * 100}%`
+    particle.style.top = `${Math.random() * 100}%`
+    particle.style.animationDelay = `${Math.random() * 5}s`
+    container.appendChild(particle)
+  }
+}
+
 async function detectLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -281,6 +396,9 @@ async function displayWeather(data) {
   document.getElementById('sunrise').textContent = new Date(data.sys.sunrise * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   document.getElementById('sunset').textContent = new Date(data.sys.sunset * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   document.getElementById('weatherIcon').textContent = getWeatherIcon(data.weather[0].main)
+  
+  // Create weather animation based on current weather
+  createWeatherAnimation(data.weather[0].main)
   
   // Update favorite button
   updateFavoriteButton(data.name)
