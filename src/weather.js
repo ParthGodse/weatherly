@@ -1,42 +1,60 @@
-const API_KEY = import.meta.env.VITE_WEATHER_API_KEY // Get from openweathermap.org
-const API_URL = 'https://api.openweathermap.org/data/2.5/weather'
+const API_KEY = import.meta.env.VITE_WEATHER_API_KEY
+const WEATHER_URL = 'https://api.openweathermap.org/data/2.5/weather'
+const FORECAST_URL = 'https://api.openweathermap.org/data/2.5/forecast'
+const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct'
 
-export async function getWeather(city) {
-  const response = await fetch(
-    `${API_URL}?q=${city}&appid=${API_KEY}&units=metric`
-  )
+export async function getWeather(city, lat, lon) {
+  if (!API_KEY) {
+    throw new Error('API key is missing. Please add VITE_WEATHER_API_KEY to your .env file')
+  }
+
+  let url
+  if (city) {
+    url = `${WEATHER_URL}?q=${city}&appid=${API_KEY}&units=metric`
+  } else if (lat && lon) {
+    url = `${WEATHER_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+  } else {
+    throw new Error('Please provide either a city name or coordinates')
+  }
+
+  const response = await fetch(url)
   
   if (!response.ok) {
-    throw new Error('City not found')
+    if (response.status === 404) {
+      throw new Error('City not found. Please check the spelling and try again.')
+    }
+    throw new Error('Failed to fetch weather data. Please try again.')
   }
   
   return await response.json()
 }
 
-export function displayWeather(data) {
-  const weatherDisplay = document.getElementById('weatherDisplay')
-  const errorDiv = document.getElementById('error')
+export async function getForecast(lat, lon) {
+  if (!API_KEY) {
+    throw new Error('API key is missing')
+  }
+
+  const url = `${FORECAST_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+  const response = await fetch(url)
   
-  document.getElementById('cityName').textContent = `${data.name}, ${data.sys.country}`
-  document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`
-  document.getElementById('description').textContent = data.weather[0].description
-  document.getElementById('humidity').textContent = `${data.main.humidity}%`
-  document.getElementById('windSpeed').textContent = `${data.wind.speed} m/s`
-  document.getElementById('weatherIcon').textContent = getWeatherIcon(data.weather[0].main)
+  if (!response.ok) {
+    throw new Error('Failed to fetch forecast data')
+  }
   
-  weatherDisplay.classList.remove('hidden')
-  errorDiv.classList.add('hidden')
+  return await response.json()
 }
 
-function getWeatherIcon(weather) {
-  const icons = {
-    Clear: '☀️',
-    Clouds: '☁️',
-    Rain: '🌧️',
-    Snow: '❄️',
-    Thunderstorm: '⛈️',
-    Drizzle: '🌦️',
-    Mist: '🌫️',
+export async function searchCities(query) {
+  if (!API_KEY) {
+    throw new Error('API key is missing')
   }
-  return icons[weather] || '🌤️'
+
+  const url = `${GEO_URL}?q=${query}&limit=5&appid=${API_KEY}`
+  const response = await fetch(url)
+  
+  if (!response.ok) {
+    throw new Error('Failed to search cities')
+  }
+  
+  return await response.json()
 }
