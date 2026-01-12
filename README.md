@@ -1,4 +1,4 @@
-# WeatherPro - Advanced Weather Application
+# Weatherly - Advanced Weather Application
 
 A modern weather application with dynamic animations, real-time data, and glassmorphism UI built with Vite and Tailwind CSS v4.
 

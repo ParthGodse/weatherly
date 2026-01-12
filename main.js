@@ -27,7 +27,7 @@ app.innerHTML = `
       <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div class="flex items-center gap-3">
           <div class="text-5xl">🌤️</div>
-          <h1 class="text-4xl font-bold text-white">WeatherPro</h1>
+          <h1 class="text-4xl font-bold text-white">Weatherly</h1>
         </div>
         
         <div class="flex gap-3">
